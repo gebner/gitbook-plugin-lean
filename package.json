@@ -1,0 +1,36 @@
+{
+  "title": "Interactive Lean Editor",
+  "name": "gitbook-plugin-lean",
+  "description": "Editor widget for Lean code blocks, with autocompletion, diagnostics, and more.",
+  "license": "Apache-2.0",
+  "version": "0.0.0",
+  "main": "index.js",
+  "browser": "./_assets/plugin.js",
+  "ebook": "./_assets/plugin.js",
+  "dependencies": {
+    "gitbook-core": "^4.0.0-alpha.6"
+  },
+  "devDependencies": {
+    "gitbook-plugin": "^4.0.0-alpha.6",
+    "eslint": "3.7.1",
+    "eslint-config-gitbook": "1.4.0"
+  },
+  "engines": {
+    "gitbook": ">=4.0.0-alpha.0"
+  },
+  "scripts": {
+    "lint": "eslint ./",
+    "build-website": "gitbook-plugin build ./src/index.js ./_assets/plugin.js",
+    "prepublish": "npm run build-website",
+    "test": "gitbook-plugin test && npm run lint"
+  },
+  "homepage": "https://github.com/gebner/gitbook-plugin-lean",
+  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gebner/gitbook-plugin-lean.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gebner/gitbook-plugin-lean/issues"
+  }
+}
