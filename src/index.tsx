@@ -107,7 +107,7 @@ class AceEditor extends React.Component<AceProps, undefined> {
                     callback(null, res.completions &&
                         res.completions.map((compl) => ({value: compl.text, meta: compl.type}))));
             },
-            identifierRegexp: /[A-Za-z'.]/,
+            identifierRegexp: /[A-Za-z_'.]/,
         }];
         this.editor.setOptions({
             enableBasicAutocompletion: true,
