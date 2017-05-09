@@ -1,9 +1,11 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import * as lean from 'lean-client-js-browser';
+import translations from '../translations.json';
 const GitBook = require('gitbook-core');
 
 declare const ace: any;
+let Range: any;
 
 const server = new lean.Server(new lean.BrowserInProcessTransport({
     javascript: 'https://leanprover.github.io/lean.js/lean3.js',
@@ -24,6 +26,7 @@ function init() {
             ace.require('ace/ext/language_tools');
             ace.require('ace/mode/lean');
             ace.require('ace/theme/subatomic');
+            Range = ace.require('ace/range').Range;
             const dom = ace.require('ace/lib/dom');
             dom.importCssString('.ace_editor.ace_autocomplete { width: 40em !important; max-width: 50%; }');
             dom.importCssString('.ace_gutter { background: white !important; }');
@@ -74,6 +77,7 @@ class AceEditor extends React.Component<AceProps, undefined> {
             this.editor.on('change', () => this.delayedSync());
             this.subscriptions.push(server.allMessages.on((msgs) => this.showMessages(msgs)));
             this.setupCompleter();
+            this.setupInputMethod();
         });
     }
 
@@ -113,6 +117,30 @@ class AceEditor extends React.Component<AceProps, undefined> {
             enableBasicAutocompletion: true,
             enableLiveAutocompletion: false,
             enableSnippets: true,
+        });
+    }
+
+    private setupInputMethod() {
+        this.editor.commands.on("afterExec", e => {
+            if (e.command.name === "insertstring") {
+                if (e.args === " " || e.args === "\\") {
+                    const pos = this.editor.getCursorPosition();
+                    const line = this.editor.session.getLine(pos.row);
+                    const place_to_search = e.args === " " ? pos.column -1 : pos.column - 2;
+                    const index = line.lastIndexOf("\\", place_to_search) + 1
+                    const match = line.substring(index, pos.column - 1);
+                    let replaceText = translations[match];
+                    if (index && replaceText) {
+                        if (e.args === "\\") {
+                            replaceText = replaceText + e.args;
+                        }
+                        this.editor.session.replace(
+                            new Range(pos.row, index - 1, pos.row, pos.column),
+                            replaceText,
+                        );
+                    }
+                }
+            }
         });
     }
 
