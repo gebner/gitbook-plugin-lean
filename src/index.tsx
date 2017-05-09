@@ -4,7 +4,6 @@ import * as lean from 'lean-client-js-browser';
 const GitBook = require('gitbook-core');
 
 declare const ace: any;
-let language_tools: any = null;
 
 const server = new lean.Server(new lean.BrowserInProcessTransport({
     javascript: 'https://leanprover.github.io/lean.js/lean3.js',
@@ -21,10 +20,12 @@ function init() {
         $script('https://leanprover.github.io/ace/ace/ace.js', () =>
         $script('https://leanprover.github.io/ace/ace/ext-language_tools.js', () => {
             ace.require('ace/lib/lang');
-            // var util = ace.require("ace/autocomplete/util")
-            language_tools = ace.require('ace/ext/language_tools');
+            ace.require('ace/autocomplete/util');
+            ace.require('ace/ext/language_tools');
             ace.require('ace/mode/lean');
             ace.require('ace/theme/subatomic');
+            ace.require('ace/lib/dom').importCssString(
+                '.ace_editor.ace_autocomplete { width: 40em !important; max-width: 50%; }')
             resolve();
         }));
     }));
@@ -32,7 +33,6 @@ function init() {
 
 interface AceProps {
     children: React.ReactNode;
-    // fileName: string;
 }
 
 function getChildrenToText(children: React.ReactNode): string {
@@ -97,14 +97,20 @@ class AceEditor extends React.Component<AceProps, undefined> {
     }
 
     private setupCompleter() {
-        const leanCompleter = {
+        this.editor.completers = [{
             getCompletions: (editor, session, pos, prefix, callback) => {
                 this.sync();
-                server.complete(this.fileName, pos.row + 1, pos.column).then((res) =>
-                    callback(null, res.completions.map((compl) => ({value: compl.text, meta: compl.type}))));
+                server.complete(this.fileName, pos.row + 1, pos.column).then(res =>
+                    callback(null, res.completions &&
+                        res.completions.map((compl) => ({value: compl.text, meta: compl.type}))));
             },
-        };
-        // language_tools.setCompleters([leanCompleter]);
+            identifierRegexp: /[A-Za-z'.]/,
+        }];
+        this.editor.setOptions({
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: false,
+            enableSnippets: true,
+        });
     }
 
     delayedSync() {
@@ -119,7 +125,6 @@ class AceEditor extends React.Component<AceProps, undefined> {
 
     render() {
         const style = {
-            fontSize: '14px !important',
             // border: '1px solid lightgray',
         };
         return (
