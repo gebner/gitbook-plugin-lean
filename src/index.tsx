@@ -24,8 +24,9 @@ function init() {
             ace.require('ace/ext/language_tools');
             ace.require('ace/mode/lean');
             ace.require('ace/theme/subatomic');
-            ace.require('ace/lib/dom').importCssString(
-                '.ace_editor.ace_autocomplete { width: 40em !important; max-width: 50%; }')
+            const dom = ace.require('ace/lib/dom');
+            dom.importCssString('.ace_editor.ace_autocomplete { width: 40em !important; max-width: 50%; }');
+            dom.importCssString('.ace_gutter { background: white !important; }');
             resolve();
         }));
     }));
@@ -64,10 +65,12 @@ class AceEditor extends React.Component<AceProps, undefined> {
             this.editor.setTheme('ace/theme/clouds');
             this.editor.getSession().setMode('ace/mode/lean');
             this.editor.setShowPrintMargin(false);
-            this.editor.setOptions({minLines: 5});
+            this.editor.setOptions({minLines: this.editor.getValue().split('\n').length+1});
             this.editor.setOptions({maxLines: 50});
-            this.editor.setOptions({fontSize: '13pt'});
+            this.editor.setOptions({fontSize: '14pt'});
             this.editor.setHighlightActiveLine(false);
+            this.editor.setHighlightGutterLine(false);
+            this.editor.renderer.setOption('showLineNumbers', false);
             this.editor.on('change', () => this.delayedSync());
             this.subscriptions.push(server.allMessages.on((msgs) => this.showMessages(msgs)));
             this.setupCompleter();
